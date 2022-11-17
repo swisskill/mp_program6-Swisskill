@@ -11,18 +11,43 @@
         android:id="@+id/joystickView"
         android:layout_width="188dp"
         android:layout_height="190dp"
-        app:JV_backgroundSizeRatio="65%"
-        app:JV_buttonSizeRatio="35%"
         android:background="@drawable/joystick_round"
+        app:JV_backgroundSizeRatio="65%"
         app:JV_borderWidth="4dp"
         app:JV_buttonColor="#000000"
+        app:JV_buttonSizeRatio="35%"
         app:JV_fixedCenter="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.029"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.497"
+        app:layout_constraintVertical_bias="0.816"
         tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.236"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.854" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="129dp"
+        android:layout_height="123dp"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.921"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.857"
+        app:srcCompat="@android:drawable/ic_notification_overlay" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
