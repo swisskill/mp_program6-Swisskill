@@ -13,7 +13,7 @@
         android:layout_height="190dp"
         app:JV_backgroundSizeRatio="65%"
         app:JV_buttonSizeRatio="35%"
-        android:background="@mipmap/ic_launcher_round"
+        android:background="@drawable/joystick_round"
         app:JV_borderWidth="4dp"
         app:JV_buttonColor="#000000"
         app:JV_fixedCenter="false"
