@@ -3,9 +3,14 @@ package com.example.botcontrol;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,7 +24,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         JoystickView joystick = findViewById(R.id.joystickView);
         TextView textView = findViewById(R.id.textView);
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
         //---------------------------------BUTTONS--------------------------------------------------
+        fab.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
+            @Override
+            public void onClick(View view) {
+                textView.setText("hit");
+                fab.setForeground(getResources().getDrawable(R.drawable.bpress));
+                fab.setForeground(getResources().getDrawable(R.drawable.nopress));
+            }
+        });
+
         joystick.setOnMoveListener((angle, strength) -> {//lambda; cause why not
             int quad;
             if (strength !=0){
