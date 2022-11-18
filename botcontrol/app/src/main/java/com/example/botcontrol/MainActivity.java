@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,7 +18,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //---------------------------------Setup----------------------------------------------------
@@ -25,14 +28,22 @@ public class MainActivity extends AppCompatActivity {
         JoystickView joystick = findViewById(R.id.joystickView);
         TextView textView = findViewById(R.id.textView);
         FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        Spinner dropdown = findViewById(R.id.spinner);
+        String[] items = new String[]{"Demo", "Tank", "Scout"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+        dropdown.setAdapter(adapter);
+
         //---------------------------------BUTTONS--------------------------------------------------
-        fab.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
+        fab.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View view) {
-                textView.setText("hit");
-                fab.setForeground(getResources().getDrawable(R.drawable.bpress));
-                fab.setForeground(getResources().getDrawable(R.drawable.nopress));
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                    fab.setForeground(getResources().getDrawable(R.drawable.bpress));
+                    //Create thread for fire networking
+                } else {
+                    fab.setForeground(getResources().getDrawable(R.drawable.nopress));
+                }
+                return false;
             }
         });
 
