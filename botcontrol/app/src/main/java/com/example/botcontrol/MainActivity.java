@@ -1,10 +1,15 @@
 package com.example.botcontrol;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -32,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
         String[] items = new String[]{"Demo", "Tank", "Scout"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(adapter);
-
+        Log.wtf("", dropdown.getSelectedItem().toString()); // this is how you get the item out of it baby
+        FloatingActionButton net = findViewById(R.id.net);
         //---------------------------------BUTTONS--------------------------------------------------
         fab.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -40,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
                     fab.setForeground(getResources().getDrawable(R.drawable.bpress));
                     //Create thread for fire networking
+                    //will need to depend on bot probably. different functions or something
                 } else {
                     fab.setForeground(getResources().getDrawable(R.drawable.nopress));
                 }
@@ -47,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        net.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialog();
+            }
+        });
         joystick.setOnMoveListener((angle, strength) -> {//lambda; cause why not
             int quad;
             if (strength !=0){
@@ -68,7 +81,26 @@ public class MainActivity extends AppCompatActivity {
         if(292.5<angle && angle<337.5){quad = 8;} //SE
         return quad;
     }
-}
+
+    void showDialog() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        final View textenter = inflater.inflate(R.layout.dialog, null);
+//        final EditText ip = textenter.findViewById(R.id.ip); //this is how you grab info from the dialog box
+        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, androidx.appcompat.R.style.Base_Theme_AppCompat_Dialog));
+        builder.setView(textenter).setTitle("Add");
+        builder.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //probably something about submitting to the server
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel(); //don't know if this is needed
+            }
+        });
+        builder.show();
+    }
+
+    }
 
 
 

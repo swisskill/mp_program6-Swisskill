@@ -62,6 +62,7 @@
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/net"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:backgroundTint="@android:color/holo_red_dark"
