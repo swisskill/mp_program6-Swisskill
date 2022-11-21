@@ -35,7 +35,7 @@
             android:text="Players"/>
 
         <EditText
-            android:id="@+id/et_cate"
+            android:id="@+id/player"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
