@@ -6,6 +6,24 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <com.example.botcontrol.JoystickView
+        android:id="@+id/joystickView2"
+        android:layout_width="133dp"
+        android:layout_height="133dp"
+        android:background="@drawable/joystick_round"
+        app:JV_autoReCenterButton="false"
+        app:JV_backgroundSizeRatio="65%"
+        app:JV_borderWidth="4dp"
+        app:JV_buttonColor="#000000"
+        app:JV_buttonSizeRatio="35%"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.78"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.467"
+        tools:ignore="MissingConstraints" />
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="47dp"
@@ -33,33 +51,21 @@
         app:layout_constraintVertical_bias="0.816"
         tools:ignore="MissingConstraints" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.236"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.854" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
         android:layout_width="133dp"
-        android:layout_height="125dp"
+        android:layout_height="133dp"
         android:backgroundTint="@android:color/transparent"
         android:clickable="true"
         android:foreground="@drawable/nopress"
         app:borderWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.922"
+        app:layout_constraintHorizontal_bias="0.973"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.856" />
-
+        app:layout_constraintVertical_bias="0.852" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/net"
@@ -85,5 +91,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="211dp"
+        android:layout_height="43dp"
+        android:text=""
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.198" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

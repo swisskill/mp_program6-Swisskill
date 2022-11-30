@@ -7,6 +7,8 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -25,6 +27,10 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
     String IP;
     String Player;
+    String whichBot;
+    TextView logger;
+    int rCompass;
+    Thread startNet;
     @SuppressLint({"SetTextI18n", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,25 +38,29 @@ public class MainActivity extends AppCompatActivity {
         Objects.requireNonNull(((MainActivity) this).getSupportActionBar()).hide();//remove toolbar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //-------------------declarations
         JoystickView joystick = findViewById(R.id.joystickView);
-        TextView textView = findViewById(R.id.textView);
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        JoystickView joystick2 = findViewById(R.id.joystickView2);
+        FloatingActionButton fire = findViewById(R.id.floatingActionButton);
+        logger = findViewById(R.id.textView);
+        FloatingActionButton net = findViewById(R.id.net);
         Spinner dropdown = findViewById(R.id.spinner);
         String[] items = new String[]{"Demo", "Tank", "Scout"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(adapter);
         Log.d("", dropdown.getSelectedItem().toString()); // this is how you get the item out of it baby
-        FloatingActionButton net = findViewById(R.id.net);
+        //        logger.append("\n"); why was this in Jim's code?
         //---------------------------------BUTTONS--------------------------------------------------
-        fab.setOnTouchListener(new View.OnTouchListener() {
+        fire.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
-                    fab.setForeground(getResources().getDrawable(R.drawable.bpress));
+                    fire.setForeground(getResources().getDrawable(R.drawable.bpress));
                     //Create thread for fire networking?
                     //will need to depend on bot probably. different functions or something
                 } else {
-                    fab.setForeground(getResources().getDrawable(R.drawable.nopress));
+                    fire.setForeground(getResources().getDrawable(R.drawable.nopress));
                 }
                 return false;
             }
@@ -59,23 +69,32 @@ public class MainActivity extends AppCompatActivity {
         net.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                whichBot = dropdown.getSelectedItem().toString();
                 showDialog();
-                //probably now run a network thread that establishes a connection with the server
+                //network thread is launched from submit dialog
             }
         });
         //---------------------------
         joystick.setOnMoveListener((angle, strength) -> {//lambda; cause why not
-            int[] coord = {0,0}; //this scares me. how often is it getting reset. is this bad programming?
+            int[] coord = {0,0};
             if (strength !=0){
-                coord = quadrant(angle); //this stuff seems sketch
-            } else {coord[0] = 0; coord[1] = 0;}
-            textView.setText(angle + ": " + coord[0] + " " + coord[1] );
+                coord = quadrant(angle);
+            }
+            Log.d("ANGLE:X:Y", angle + ": " + coord[0] + " " + coord[1] + " str " + strength );
+            //probably launch a move thread
+        });
+        //---------------------------
+        joystick2.setOnMoveListener((angle, strength) -> {//lambda; cause why not
+            rCompass = (angle - 90);
+            if(rCompass < 0){rCompass = rCompass*-1;}
+            Log.d("ANGLE", rCompass + "");
+            //we'll need to just save this information. No need to send any net threads until firing
         });
     }
     //---------------------------------METHODS------------------------------------------------------
     public int[] quadrant(int angle){
         int[] coord = {0,0}; //where 0th is x and 1st is y
-        if(337.5<angle || angle<22.5){coord[0] = 1; coord[1] = 0;}  //E ;that's so weird that I have to use an or. I wish i could just do #<angle<#
+        if(337.5<angle || angle<22.5){coord[0] = 1; coord[1] = 0;}  //E
         if(22.5<angle && angle<67.5){coord[0] = 1; coord[1] = 1;}   //NE
         if(67.5<angle && angle<112.5){coord[0] = 0; coord[1] = 1;}  //N
         if(112.5<angle && angle<157.5){coord[0] = -1; coord[1] = 1;} //NW
@@ -96,10 +115,11 @@ public class MainActivity extends AppCompatActivity {
         builder.setView(textenter).setTitle("Connect");
         builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                //probably something about submitting to the server
-                // or maybe we just set things and then keep networking in the ui code instead of a function call
                 IP = ip.getText().toString();
                 Player = player.getText().toString();
+                doNetwork start = new doNetwork();
+                startNet = new Thread(start);
+                startNet.start();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -108,6 +128,136 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.show();
     }
+    private Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            logger.setText(msg.getData().getString("msg"));
+            return true;
+        }
+
+    });
+    public void mkmsg(String str) {
+        //handler junk, because thread can't update screen!
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putString("msg", str);
+        msg.setData(b);
+        handler.sendMessage(msg);
+    }
+    public class doNetwork implements Runnable{
+        @Override
+        public void run() {
+            mkmsg("HOST:" + IP);
+        }
+    }
+
+
+
+
+
+/*
+
+public class MainActivity extends AppCompatActivity {
+    TextView logger;
+    Button mkconn;
+    EditText hostname, port;
+    Thread myNet;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        logger = findViewById(R.id.logger);
+        logger.append("\n");
+        hostname = findViewById(R.id.EThostname);
+        //This address is the localhost for the computer the emulator is running on.  If you are running
+        //tcpserv in another emulator on the same machine, use this address
+        hostname.setText("10.0.2.2");
+        //This would be more running on the another phone or different host and likely not this ip address either.
+        //hostname.setText("10.121.174.200");
+        port = findViewById(R.id.ETport);
+        mkconn = findViewById(R.id.makeconn);
+        mkconn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doNetwork stuff = new doNetwork();
+                myNet = new Thread(stuff);
+                myNet.start();
+            }
+        });
+    }
+
+    private Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            logger.append(msg.getData().getString("msg"));
+            return true;
+        }
+
+    });
+
+    public void mkmsg(String str) {
+        //handler junk, because thread can't update screen!
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putString("msg", str);
+        msg.setData(b);
+        handler.sendMessage(msg);
+    }
+
+    /**
+     * this code does most of the work in a thread, so that it doesn't lock up the activity_main (UI) thread
+     * It call mkmsg (which calls the handler to update the screen)
+     */
+/*
+    class doNetwork implements Runnable {
+        public PrintWriter out;
+        public BufferedReader in;
+
+        public void run() {
+            int p = Integer.parseInt(port.getText().toString());
+            String h = hostname.getText().toString();
+            mkmsg("host is " + h + "\n");
+            mkmsg(" Port is " + p + "\n");
+            try {
+                InetAddress serverAddr = InetAddress.getByName(h);
+                mkmsg("Attempt Connecting..." + h + "\n");
+                Socket socket = new Socket(serverAddr, p);
+                String message = "Hello from Client android emulator";
+
+                //made connection, setup the read (in) and write (out)
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                //now send a message to the server and then read back the response.
+                try {
+                    //write a message to the server
+                    mkmsg("Attempting to send message ...\n");
+                    out.println(message);
+                    mkmsg("Message sent...\n");
+
+                    //read back a message from the server.
+                    mkmsg("Attempting to receive a message ...\n");
+                    String str = in.readLine();
+                    mkmsg("received a message:\n" + str + "\n");
+
+                    mkmsg("We are done, closing connection\n");
+                } catch (Exception e) {
+                    mkmsg("Error happened sending/receiving\n");
+
+                } finally {
+                    in.close();
+                    out.close();
+                    socket.close();
+                }
+
+            } catch (Exception e) {
+                mkmsg("Unable to connect...\n");
+            }
+        }
+    }
+}
+*/
 
 }
 
