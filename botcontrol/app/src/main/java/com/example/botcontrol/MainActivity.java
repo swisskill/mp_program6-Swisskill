@@ -22,10 +22,18 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     String IP;
+    int PORT = 3012;
     String Player;
     String whichBot;
     TextView logger;
@@ -145,10 +153,46 @@ public class MainActivity extends AppCompatActivity {
         handler.sendMessage(msg);
     }
     public class doNetwork implements Runnable{
-        @Override
+        public PrintWriter out;
+        public BufferedReader in;
         public void run() {
-            mkmsg("HOST:" + IP);
+             mkmsg("HOST:" + IP);
+
+            try {
+                InetAddress serverAddr = InetAddress.getByName(IP);
+                mkmsg("Attempt Connecting..." + IP + "\n");
+                Socket socket = new Socket(serverAddr, PORT);
+
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                try {
+                    //write a message to the server
+                    mkmsg("Attempting to send message ...\n");
+                    out.println("Swisskill 0 0 3");//now we know this is where you send messages to the server
+                    mkmsg("Message sent...\n");
+
+                    //read back a message from the server.
+                    mkmsg("Attempting to receive a message ...\n");
+                    String str = in.readLine();
+                    mkmsg("received a message:\n" + str + "\n");
+
+                    mkmsg("We are done, closing connection\n");
+                } catch (Exception e) {
+                    mkmsg("Error happened sending/receiving\n");
+
+                } finally {
+                    in.close();
+                    out.close();
+                    socket.close();
+                }
+
+            } catch (Exception e) {
+                Log.wtf("", e);
+                mkmsg("Unable to connect...\n");
+            }
         }
+
     }
 
 
