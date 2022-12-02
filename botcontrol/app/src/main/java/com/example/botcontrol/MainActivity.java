@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Sendmsg Sendmsg;
     public PrintWriter out;
     public BufferedReader in;
+    String botType;
     @SuppressLint({"SetTextI18n", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 whichBot = dropdown.getSelectedItem().toString();
                 showDialog();
+                botType = dropdown.getSelectedItem().toString();
             }
         });
         //----------------------------
@@ -132,13 +134,21 @@ public class MainActivity extends AppCompatActivity {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 //strangely enough, messages aren't updating. Need to find a way to actually continue to run this thing. While?
                 try {
-                    //write a message to the server
+//                    armor bullet scan
                     mkmsg("Attempting to send message ...\n");
-                    out.println("Swisskill 0 4 1");//now we know this is where you send messages to the server
+                    if(botType.compareTo("Scout") == 1){
+                        out.println("Swisskill 0 0 3");
+                    } else if (botType.compareTo("Tank") == 1){
+                        out.println("Swisskill 4 1 0");
+                    } else {
+                        out.println("Swisskill 0 0 0");
+                    }
+                    //this is the loop
                     mkmsg("Message sent...\n");
                     mkmsg("Attempting to receive a message ...\n");
                     String str = in.readLine();
                     mkmsg("received a message:\n" + str + "\n");
+                    //this is the end of loop
                 } catch (Exception e) {
                     mkmsg("Error happened sending/receiving\n");
                 }
@@ -152,13 +162,13 @@ public class MainActivity extends AppCompatActivity {
     public int[] quadrant(int angle){
         int[] coord = {0,0}; //where 0th is x and 1st is y
         if(337.5<angle || angle<22.5){coord[0] = 1; coord[1] = 0;}  //E
-        if(22.5<angle && angle<67.5){coord[0] = 1; coord[1] = 1;}   //NE
-        if(67.5<angle && angle<112.5){coord[0] = 0; coord[1] = 1;}  //N
-        if(112.5<angle && angle<157.5){coord[0] = -1; coord[1] = 1;} //NW
+        if(22.5<angle && angle<67.5){coord[0] = 1; coord[1] = -1;}   //NE
+        if(67.5<angle && angle<112.5){coord[0] = 0; coord[1] = -1;}  //N
+        if(112.5<angle && angle<157.5){coord[0] = -1; coord[1] = -1;} //NW
         if(157.5<angle && angle<202.5){coord[0] = -1; coord[1] = 0;} //W
-        if(202.5<angle && angle<247.5){coord[0] = -1; coord[1] = -1;} //SW
-        if(247.5<angle && angle<292.5){coord[0] = 0; coord[1] = -1;} //S
-        if(292.5<angle && angle<337.5){coord[0] = 1; coord[1] = -1;} //SE
+        if(202.5<angle && angle<247.5){coord[0] = -1; coord[1] = 1;} //SW
+        if(247.5<angle && angle<292.5){coord[0] = 0; coord[1] = 1;} //S
+        if(292.5<angle && angle<337.5){coord[0] = 1; coord[1] = 1;} //SE
         return coord;
     }
     //---------------------------
@@ -199,113 +209,6 @@ public class MainActivity extends AppCompatActivity {
         msg.setData(b);
         handler.sendMessage(msg);
     }
-
-
-
-
-/*
-
-public class MainActivity extends AppCompatActivity {
-    TextView logger;
-    Button mkconn;
-    EditText hostname, port;
-    Thread myNet;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        logger = findViewById(R.id.logger);
-        logger.append("\n");
-        hostname = findViewById(R.id.EThostname);
-        //This address is the localhost for the computer the emulator is running on.  If you are running
-        //tcpserv in another emulator on the same machine, use this address
-        hostname.setText("10.0.2.2");
-        //This would be more running on the another phone or different host and likely not this ip address either.
-        //hostname.setText("10.121.174.200");
-        port = findViewById(R.id.ETport);
-        mkconn = findViewById(R.id.makeconn);
-        mkconn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Connect stuff = new Connect();
-                myNet = new Thread(stuff);
-                myNet.start();
-            }
-        });
-    }
-
-    private Handler handler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            logger.append(msg.getData().getString("msg"));
-            return true;
-        }
-
-    });
-
-    public void mkmsg(String str) {
-        //handler junk, because thread can't update screen!
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putString("msg", str);
-        msg.setData(b);
-        handler.sendMessage(msg);
-    }
-
-    /**
-     * this code does most of the work in a thread, so that it doesn't lock up the activity_main (UI) thread
-     * It call mkmsg (which calls the handler to update the screen)
-     */
-/*
-    class Connect implements Runnable {
-        public PrintWriter out;
-        public BufferedReader in;
-
-        public void run() {
-            int p = Integer.parseInt(port.getText().toString());
-            String h = hostname.getText().toString();
-            mkmsg("host is " + h + "\n");
-            mkmsg(" Port is " + p + "\n");
-            try {
-                InetAddress serverAddr = InetAddress.getByName(h);
-                mkmsg("Attempt Connecting..." + h + "\n");
-                Socket socket = new Socket(serverAddr, p);
-                String message = "Hello from Client android emulator";
-
-                //made connection, setup the read (in) and write (out)
-                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                //now send a message to the server and then read back the response.
-                try {
-                    //write a message to the server
-                    mkmsg("Attempting to send message ...\n");
-                    out.println(message);
-                    mkmsg("Message sent...\n");
-
-                    //read back a message from the server.
-                    mkmsg("Attempting to receive a message ...\n");
-                    String str = in.readLine();
-                    mkmsg("received a message:\n" + str + "\n");
-
-                    mkmsg("We are done, closing connection\n");
-                } catch (Exception e) {
-                    mkmsg("Error happened sending/receiving\n");
-
-                } finally {
-                    in.close();
-                    out.close();
-                    socket.close();
-                }
-
-            } catch (Exception e) {
-                mkmsg("Unable to connect...\n");
-            }
-        }
-    }
-}
-*/
 
 }
 
