@@ -39,6 +39,11 @@ public class MainActivity extends AppCompatActivity {
     TextView logger;
     int rCompass;
     Thread startNet;
+    Thread send;
+    Connect start;
+    Sendmsg Sendmsg;
+    public PrintWriter out;
+    public BufferedReader in;
     @SuppressLint({"SetTextI18n", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +70,11 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
                     fire.setForeground(getResources().getDrawable(R.drawable.bpress));
-                    //Create thread for fire networking?
-                    //will need to depend on bot probably. different functions or something
                 } else {
                     fire.setForeground(getResources().getDrawable(R.drawable.nopress));
+                    Sendmsg = new Sendmsg("fire " + rCompass);
+                    send = new Thread(Sendmsg);
+                    send.start();
                 }
                 return false;
             }
@@ -79,17 +85,18 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 whichBot = dropdown.getSelectedItem().toString();
                 showDialog();
-                //network thread is launched from submit dialog
             }
         });
-        //---------------------------
+        //----------------------------
         joystick.setOnMoveListener((angle, strength) -> {//lambda; cause why not
             int[] coord = {0,0};
             if (strength !=0){
                 coord = quadrant(angle);
             }
-            Log.d("ANGLE:X:Y", angle + ": " + coord[0] + " " + coord[1] + " str " + strength );
-            //probably launch a move thread
+            Log.wtf("ANGLE:X:Y", angle + ": " + coord[0] + " " + coord[1] + " str " + strength );
+            Sendmsg = new Sendmsg("move " + coord[0] + " " + coord[1]);
+            send = new Thread(Sendmsg);
+            send.start();
         });
         //---------------------------
         joystick2.setOnMoveListener((angle, strength) -> {//lambda; cause why not
@@ -98,6 +105,48 @@ public class MainActivity extends AppCompatActivity {
             Log.d("ANGLE", rCompass + "");
             //we'll need to just save this information. No need to send any net threads until firing
         });
+    }
+    //---------------------------------Network Classes------------------------------------------------------
+    public class Sendmsg implements Runnable{
+        String sendOpt;
+        public Sendmsg(String opt){
+            sendOpt = opt;
+        }
+        public void run(){
+            try{
+                out.println(sendOpt);
+            } catch (Exception e){
+                mkmsg(String.valueOf(e));
+            }
+        }
+    }
+    public class Connect implements Runnable{
+        public void run() {
+            mkmsg("HOST:" + IP);
+            try {
+                InetAddress serverAddr = InetAddress.getByName(IP);
+                mkmsg("Attempt Connecting..." + IP + "\n");
+                Socket socket = new Socket(serverAddr, PORT);
+
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                //strangely enough, messages aren't updating. Need to find a way to actually continue to run this thing. While?
+                try {
+                    //write a message to the server
+                    mkmsg("Attempting to send message ...\n");
+                    out.println("Swisskill 0 4 1");//now we know this is where you send messages to the server
+                    mkmsg("Message sent...\n");
+                    mkmsg("Attempting to receive a message ...\n");
+                    String str = in.readLine();
+                    mkmsg("received a message:\n" + str + "\n");
+                } catch (Exception e) {
+                    mkmsg("Error happened sending/receiving\n");
+                }
+            } catch (Exception e) {
+                Log.wtf("", e);
+                mkmsg("Unable to connect...\n");
+            }
+        }
     }
     //---------------------------------METHODS------------------------------------------------------
     public int[] quadrant(int angle){
@@ -125,76 +174,31 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 IP = ip.getText().toString();
                 Player = player.getText().toString();
-                doNetwork start = new doNetwork();
+                start = new Connect();
                 startNet = new Thread(start);
                 startNet.start();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel(); //don't know if this is needed
+                dialog.cancel();
             }
         });
         builder.show();
     }
-    private Handler handler = new Handler(new Handler.Callback() {
+    public Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             logger.setText(msg.getData().getString("msg"));
             return true;
         }
-
     });
     public void mkmsg(String str) {
-        //handler junk, because thread can't update screen!
         Message msg = new Message();
         Bundle b = new Bundle();
         b.putString("msg", str);
         msg.setData(b);
         handler.sendMessage(msg);
     }
-    public class doNetwork implements Runnable{
-        public PrintWriter out;
-        public BufferedReader in;
-        public void run() {
-             mkmsg("HOST:" + IP);
-
-            try {
-                InetAddress serverAddr = InetAddress.getByName(IP);
-                mkmsg("Attempt Connecting..." + IP + "\n");
-                Socket socket = new Socket(serverAddr, PORT);
-
-                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                try {
-                    //write a message to the server
-                    mkmsg("Attempting to send message ...\n");
-                    out.println("Swisskill 0 0 3");//now we know this is where you send messages to the server
-                    mkmsg("Message sent...\n");
-
-                    //read back a message from the server.
-                    mkmsg("Attempting to receive a message ...\n");
-                    String str = in.readLine();
-                    mkmsg("received a message:\n" + str + "\n");
-
-                    mkmsg("We are done, closing connection\n");
-                } catch (Exception e) {
-                    mkmsg("Error happened sending/receiving\n");
-
-                } finally {
-                    in.close();
-                    out.close();
-                    socket.close();
-                }
-
-            } catch (Exception e) {
-                Log.wtf("", e);
-                mkmsg("Unable to connect...\n");
-            }
-        }
-
-    }
-
 
 
 
@@ -224,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
         mkconn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doNetwork stuff = new doNetwork();
+                Connect stuff = new Connect();
                 myNet = new Thread(stuff);
                 myNet.start();
             }
@@ -254,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
      * It call mkmsg (which calls the handler to update the screen)
      */
 /*
-    class doNetwork implements Runnable {
+    class Connect implements Runnable {
         public PrintWriter out;
         public BufferedReader in;
 
