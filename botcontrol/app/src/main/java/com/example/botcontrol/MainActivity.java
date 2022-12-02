@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         joystick2.setOnMoveListener((angle, strength) -> {//lambda; cause why not
             rCompass = (angle - 90);
             if(rCompass < 0){rCompass = rCompass*-1;}
-            Log.d("ANGLE", rCompass + "");
+            Log.d("ANGLE", rCompass + " : " + angle);
             //we'll need to just save this information. No need to send any net threads until firing
         });
     }
