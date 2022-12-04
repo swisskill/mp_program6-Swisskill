@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,7 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+//import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -34,7 +33,6 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
     String IP;
     int PORT = 3012;
-    String Player;
     String whichBot;
     TextView logger;
     int rCompass;
@@ -64,20 +62,16 @@ public class MainActivity extends AppCompatActivity {
         dropdown.setAdapter(adapter);
         Log.d("", dropdown.getSelectedItem().toString()); // this is how you get the item out of it baby
         //---------------------------------BUTTONS--------------------------------------------------
-        fire.setOnTouchListener(new View.OnTouchListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
-                    fire.setForeground(getResources().getDrawable(R.drawable.bpress));
-                } else {
-                    fire.setForeground(getResources().getDrawable(R.drawable.nopress));
-                    Sendmsg = new Sendmsg("fire " + rCompass);
-                    send = new Thread(Sendmsg);
-                    send.start();
-                }
-                return false;
+        fire.setOnTouchListener((view, motionEvent) -> {
+            if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                fire.setForeground(getResources().getDrawable(R.drawable.bpress));
+            } else {
+                fire.setForeground(getResources().getDrawable(R.drawable.nopress));
+                Sendmsg = new Sendmsg("fire " + rCompass);
+                send = new Thread(Sendmsg);
+                send.start();
             }
+            return false;
         });
         //---------------------------
         net.setOnClickListener(new View.OnClickListener() {
@@ -139,14 +133,16 @@ public class MainActivity extends AppCompatActivity {
                     } else if (botType.compareTo("Tank") == 0) {
                         out.println("Swisskill 4 1 0");
                     } else {
-                        out.println("Swisskill 0 0 0");
+                        out.println("DemoWill 0 0 0");
                     }
-                    while (str.compareTo("GameOver") != 0) {
+                    while (str.compareTo("Info GameOver") != 0 && str.compareTo("Info Dead") != 0) {
 //                    mkmsg("Message sent...\n");
 //                    mkmsg("Attempting to receive a message ...\n");
                     str = in.readLine();
-                    Log.d("status ", str);
-                    mkmsg("received a message:\n" + str + "\n");
+                    Log.d("str: ", str);
+                    if(str.startsWith("Info")){
+                            mkmsg("received a message:\n" + str + "\n");
+                        }
                     }
                 } catch (Exception e) {
                     Log.wtf("Error happened sending/receiving ", e);
@@ -176,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         final View textenter = inflater.inflate(R.layout.dialog, null);
         final EditText ip = textenter.findViewById(R.id.ip); //does this need to be a "final"
-        final EditText player = textenter.findViewById(R.id.player);
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, androidx.appcompat.R.style.Base_Theme_AppCompat_Dialog));
         builder.setView(textenter).setTitle("Connect");
@@ -185,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
                 IP = ip.getText().toString();
                 if (IP.compareTo("home") == 0){IP = "192.168.1.97";}
                 else if (IP.compareTo("class") == 0){IP = "10.216.217.131";}
-                Player = player.getText().toString();
                 start = new Connect();
                 startNet = new Thread(start);
                 startNet.start();
