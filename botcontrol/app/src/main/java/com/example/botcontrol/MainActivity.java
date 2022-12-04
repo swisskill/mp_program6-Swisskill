@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(adapter);
         Log.d("", dropdown.getSelectedItem().toString()); // this is how you get the item out of it baby
-        //        logger.append("\n"); why was this in Jim's code?
         //---------------------------------BUTTONS--------------------------------------------------
         fire.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("UseCompatLoadingForDrawables")
@@ -90,22 +89,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //----------------------------
-        joystick.setOnMoveListener((angle, strength) -> {//lambda; cause why not
+        joystick.setOnMoveListener((angle, strength) -> {
             int[] coord = {0,0};
             if (strength !=0){
                 coord = quadrant(angle);
             }
-            Log.wtf("ANGLE:X:Y", angle + ": " + coord[0] + " " + coord[1] + " str " + strength );
+//            Log.d("ANGLE:X:Y", angle + ": " + coord[0] + " " + coord[1] + " str " + strength );
             Sendmsg = new Sendmsg("move " + coord[0] + " " + coord[1]);
             send = new Thread(Sendmsg);
             send.start();
         });
         //---------------------------
         joystick2.setOnMoveListener((angle, strength) -> {//lambda; cause why not
-            rCompass = (angle - 90);
-            if(rCompass < 0){rCompass = rCompass*-1;}
-            Log.d("ANGLE", rCompass + " : " + angle);
-            //we'll need to just save this information. No need to send any net threads until firing
+            if(angle > 0 && angle < 90){rCompass = 90-angle;}
+            else{rCompass = 450-angle;}
+//            Log.d("ANGLE", rCompass + " : " + angle);
         });
     }
     //---------------------------------Network Classes------------------------------------------------------
@@ -123,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public class Connect implements Runnable{
+        String str = "";
         public void run() {
             mkmsg("HOST:" + IP);
             try {
@@ -132,28 +131,29 @@ public class MainActivity extends AppCompatActivity {
 
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                //strangely enough, messages aren't updating. Need to find a way to actually continue to run this thing. While?
                 try {
 //                    armor bullet scan
                     mkmsg("Attempting to send message ...\n");
-                    if(botType.compareTo("Scout") == 1){
+                    if (botType.compareTo("Scout") == 0) {
                         out.println("Swisskill 0 0 3");
-                    } else if (botType.compareTo("Tank") == 1){
+                    } else if (botType.compareTo("Tank") == 0) {
                         out.println("Swisskill 4 1 0");
                     } else {
                         out.println("Swisskill 0 0 0");
                     }
-                    //this is the loop
-                    mkmsg("Message sent...\n");
-                    mkmsg("Attempting to receive a message ...\n");
-                    String str = in.readLine();
+                    while (str.compareTo("GameOver") != 0) {
+//                    mkmsg("Message sent...\n");
+//                    mkmsg("Attempting to receive a message ...\n");
+                    str = in.readLine();
+                    Log.d("status ", str);
                     mkmsg("received a message:\n" + str + "\n");
-                    //this is the end of loop
+                    }
                 } catch (Exception e) {
+                    Log.wtf("Error happened sending/receiving ", e);
                     mkmsg("Error happened sending/receiving\n");
                 }
             } catch (Exception e) {
-                Log.wtf("", e);
+                Log.wtf("Unable to connect... ", e);
                 mkmsg("Unable to connect...\n");
             }
         }
@@ -183,6 +183,8 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 IP = ip.getText().toString();
+                if (IP.compareTo("home") == 0){IP = "192.168.1.97";}
+                else if (IP.compareTo("class") == 0){IP = "10.216.217.131";}
                 Player = player.getText().toString();
                 start = new Connect();
                 startNet = new Thread(start);
