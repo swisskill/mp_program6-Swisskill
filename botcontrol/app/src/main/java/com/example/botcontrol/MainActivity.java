@@ -32,6 +32,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     String IP;
+    String USER;
     int PORT = 3012;
     String whichBot;
     TextView logger;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         logger = findViewById(R.id.textView);
         FloatingActionButton net = findViewById(R.id.net);
         Spinner dropdown = findViewById(R.id.spinner);
-        String[] items = new String[]{"Demo", "Tank", "Scout"};
+        String[] items = new String[]{"Demo", "Tank", "Scout", "Custom"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(adapter);
         Log.d("", dropdown.getSelectedItem().toString()); // this is how you get the item out of it baby
@@ -129,11 +130,14 @@ public class MainActivity extends AppCompatActivity {
 //                    armor bullet scan
                     mkmsg("Attempting to send message ...\n");
                     if (botType.compareTo("Scout") == 0) {
-                        out.println("Swisskill 0 0 3");
+                        out.println(USER + " 0 0 3");
                     } else if (botType.compareTo("Tank") == 0) {
-                        out.println("Swisskill 4 1 0");
-                    } else {
-                        out.println("DemoWill 0 0 0");
+                        out.println(USER + " 4 1 0");
+                    } else if (botType.compareTo("Custom") == 0){
+                        out.println(USER);
+                    }
+                    else {
+                        out.println(USER + " 0 0 0");
                     }
                     while (str.compareTo("Info GameOver") != 0 && str.compareTo("Info Dead") != 0) {
 //                    mkmsg("Message sent...\n");
@@ -172,12 +176,13 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         final View textenter = inflater.inflate(R.layout.dialog, null);
         final EditText ip = textenter.findViewById(R.id.ip); //does this need to be a "final"
-
+        final EditText user = textenter.findViewById(R.id.user);
         final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, androidx.appcompat.R.style.Base_Theme_AppCompat_Dialog));
         builder.setView(textenter).setTitle("Connect");
         builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 IP = ip.getText().toString();
+                USER = user.getText().toString();
                 if (IP.compareTo("home") == 0){IP = "192.168.1.97";}
                 else if (IP.compareTo("class") == 0){IP = "10.216.217.131";}
                 start = new Connect();
