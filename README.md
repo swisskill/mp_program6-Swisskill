@@ -14,3 +14,4 @@ Will Brant
 - Be careful with moving and firing. There is nothing to prevent queueing too many messages. I actually got used to playing it that way so I don't mind, but it's a learning curve. Basically, you need to get used to not holding down the move button, that is all.
 
 
+ran in class 50/50
